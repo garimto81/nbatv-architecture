@@ -100,48 +100,58 @@
             60% {transform: translateY(-5px);}
         }
 
-        /* --- 텍스트 시인성 강제 설정 (High Contrast) --- */
+        /* --- [수정됨] 텍스트 시인성 강제 설정 (1px Black Stroke) --- */
         
-        /* 1. 기본 텍스트: 흰색 */
+        /* 1. 모든 텍스트: 흰색 채움 + 1px 검정 스트로크 */
         g.node text, 
-        g.edgeLabel text, 
         g.cluster text, 
         .mermaid text,
-        .label {
+        .label,
+        foreignObject div,
+        g.node.client text, g.node.client tspan,
+        g.node.vimeo text, g.node.vimeo tspan,
+        g.node.brightcove text, g.node.brightcove tspan {
             fill: #ffffff !important;
             color: #ffffff !important;
             font-family: 'Segoe UI', sans-serif !important;
-            font-weight: 700 !important;
-            font-size: 16px !important; 
+            font-weight: 900 !important; /* 두께 최대 */
+            font-size: 18px !important;
+            
+            /* 1px 검정색 테두리 적용 */
+            text-shadow: none !important;
+            -webkit-text-stroke: 1px #000000 !important; 
+            paint-order: stroke fill !important; /* 테두리가 글자를 갉아먹지 않게 */
+            
             stroke: none !important; 
         }
 
-        /* 2. Client 및 Vimeo 노드 (밝은 배경) -> 검정색 텍스트 */
-        g.node.client text, g.node.client tspan {
-            fill: #000000 !important;
-            color: #000000 !important;
-        }
-        g.node.vimeo text, g.node.vimeo tspan {
-            fill: #000000 !important;
-            color: #000000 !important;
-        }
-
-        /* 3. 연결선 라벨 배경 */
+        /* 2. 연결선 라벨: 흰색 글씨 + 1px 스트로크 + 배경 박스 */
         .edgeLabel rect {
-            fill: #141414 !important;
-            opacity: 0.9;
+            fill: #000000 !important;
+            opacity: 0.7 !important;
+            stroke: #555 !important;
+            stroke-width: 1px !important;
+            rx: 4px; ry: 4px;
+        }
+        g.edgeLabel text {
+            fill: #ffffff !important;
+            -webkit-text-stroke: 1px #000000 !important;
+            font-size: 14px !important;
+            font-weight: 800 !important;
         }
 
-        /* 4. 서브그래프 제목 */
+        /* 3. 서브그래프 제목: 금색 + 1px 스트로크 */
         g.cluster text {
-            font-size: 20px !important;
+            font-size: 22px !important;
             text-transform: uppercase;
-            fill: #cccccc !important; 
+            fill: #FFD700 !important; /* Gold Color */
+            -webkit-text-stroke: 1px #000000 !important;
+            font-weight: 900 !important;
         }
 
-        /* 5. 노드 선명도 */
+        /* 4. 노드 테두리 선명하게 */
         .node rect, .node circle, .node ellipse, .node polygon {
-            stroke-width: 2px !important;
+            stroke-width: 3px !important;
         }
 
     </style>
@@ -304,7 +314,79 @@
                     V_CDN --> V_Client
             </div>
         </div>
-        <div class="page-indicator" style="animation: none;">▲ Scroll Up for NBA Model ▲</div>
+        <div class="page-indicator">▼ Scroll for Brightcove Model ▼</div>
+    </section>
+
+    <!-- PAGE 3: BRIGHTCOVE MODEL -->
+    <section class="page">
+        <h1 style="color: #FF6600;">3. Brightcove Architecture</h1>
+        <p>Enterprise Video Platform (EVP): Robust SaaS & Monetization</p>
+
+        <div class="diagram-container">
+            <div class="mermaid">
+                graph TD
+                    %% Styles
+                    classDef brightcove fill:#FF6600,stroke:#fff,stroke-width:2px,color:#000
+                    classDef client fill:#fff,stroke:#FF6600,stroke-width:4px,color:#000
+                    classDef source fill:#444,stroke:#fff,stroke-width:1px,color:#fff
+
+                    subgraph B_Input [1. ACQUISITION]
+                        direction TB
+                        B_Live[Live Module<br/>Cloud Ingest]:::source
+                        B_API[Dynamic Ingest<br/>High-Speed API]:::source
+                    end
+
+                    subgraph B_MAM [2. INGEST and MAM]
+                        direction TB
+                        B_Zencoder[Zencoder<br/>Cloud Transcoding]:::brightcove
+                        B_VideoCloud[Video Cloud CMS<br/>Advanced Metadata]:::brightcove
+                    end
+
+                    subgraph B_Proc [3. PROCESSING and ADs]
+                        direction TB
+                        B_Context[Context Awareness<br/>Auto Tagging]:::brightcove
+                        B_SSAI[Brightcove SSAI<br/>Server Side Ad Insert]:::brightcove
+                    end
+
+                    subgraph B_Back [4. BACKEND]
+                        direction TB
+                        B_Beacon[Beacon CMS<br/>OTT Management]:::brightcove
+                        B_Analytics[Data Insight<br/>Real-time Analytics]:::brightcove
+                        B_Integrate[MAP Integrations<br/>Marketing Tools]:::brightcove
+                    end
+
+                    subgraph B_Dist [5. DELIVERY]
+                        direction TB
+                        B_CDN[Brightcove CDN<br/>Enterprise Multi-CDN]:::brightcove
+                    end
+
+                    subgraph B_App [6. EXPERIENCE]
+                        direction TB
+                        B_Client[Beacon Apps<br/>Configurable OTT UI]:::client
+                        B_Player[Brightcove Player<br/>HTML5 Enterprise]:::client
+                    end
+
+                    B_Live --> B_Zencoder
+                    B_API --> B_Zencoder
+                    
+                    B_Zencoder --> B_VideoCloud
+                    B_VideoCloud --> B_Context
+                    
+                    B_Context --> B_Beacon
+                    B_VideoCloud --> B_SSAI
+                    
+                    B_Beacon --> B_SSAI
+                    B_SSAI --> B_CDN
+                    
+                    B_CDN --> B_Player
+                    B_CDN --> B_Client
+                    
+                    B_Player -.-> B_Analytics
+                    B_Client -.-> B_Analytics
+                    B_Analytics --> B_Integrate
+            </div>
+        </div>
+        <div class="page-indicator" style="animation: none;">▲ Scroll Up for Models ▲</div>
     </section>
 
     <script>
@@ -327,7 +409,7 @@
                 clusterBorder: '#444',
                 defaultLinkColor: '#ffffff',
                 fontFamily: 'Segoe UI',
-                fontSize: '16px',
+                fontSize: '18px',
                 nodeTextColor: '#ffffff',
                 edgeLabelColor: '#ffffff'
             }
