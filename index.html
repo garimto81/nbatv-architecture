@@ -26,11 +26,11 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 10px; /* 패딩 축소하여 다이어그램 공간 확보 */
+            padding: 10px; 
             box-sizing: border-box;
             border-bottom: 1px solid #333;
             position: relative;
-            overflow: hidden; /* 페이지 밖으로 나가는 요소 숨김 */
+            overflow: hidden; 
         }
 
         h1 {
@@ -52,21 +52,21 @@
 
         .diagram-container {
             width: 98%;
-            height: 85%; /* 높이를 키워서 다이어그램 확대 */
+            height: 85%; 
             background-color: #141414;
             border: 1px solid #333;
             border-radius: 15px;
             padding: 0;
             box-shadow: 0 20px 50px rgba(0,0,0,0.6);
             
-            /* [수정] 서브 스크롤 제거 및 중앙 정렬 */
+            /* 서브 스크롤 제거 및 중앙 정렬 */
             overflow: hidden; 
             display: flex;
             justify-content: center;
             align-items: center;
         }
 
-        /* [수정] Mermaid SVG 크기 최적화 */
+        /* Mermaid SVG 크기 최적화 (화면에 꽉 차게) */
         .mermaid {
             width: 100%;
             height: 100%;
@@ -76,9 +76,10 @@
         }
 
         .mermaid svg {
-            max-height: 100%; /* 높이에 맞춰서 꽉 차게 */
-            width: auto;      /* 비율 유지 */
-            max-width: 100%;  /* 너비가 넘치지 않게 */
+            max-height: 95%; 
+            max-width: 95%;
+            width: auto;      
+            height: auto;  
         }
 
         .page-indicator {
@@ -99,9 +100,9 @@
             60% {transform: translateY(-5px);}
         }
 
-        /* --- [중요] 텍스트 시인성 강제 설정 (High Contrast) --- */
+        /* --- 텍스트 시인성 강제 설정 (High Contrast) --- */
         
-        /* 1. 모든 SVG 텍스트 요소를 강제로 흰색으로 */
+        /* 1. 기본 텍스트: 흰색 */
         g.node text, 
         g.edgeLabel text, 
         g.cluster text, 
@@ -111,11 +112,11 @@
             color: #ffffff !important;
             font-family: 'Segoe UI', sans-serif !important;
             font-weight: 700 !important;
-            font-size: 16px !important; /* 폰트 크기 약간 키움 */
-            stroke: none !important; /* 텍스트 외곽선 제거로 깔끔하게 */
+            font-size: 16px !important; 
+            stroke: none !important; 
         }
 
-        /* 2. [예외] Client 및 Vimeo 노드 (밝은 배경/파란 배경) -> 검정색 텍스트 */
+        /* 2. Client 및 Vimeo 노드 (밝은 배경) -> 검정색 텍스트 */
         g.node.client text, g.node.client tspan {
             fill: #000000 !important;
             color: #000000 !important;
@@ -125,7 +126,7 @@
             color: #000000 !important;
         }
 
-        /* 3. 연결선 라벨의 배경색 (어둡게 하여 글씨 강조) */
+        /* 3. 연결선 라벨 배경 */
         .edgeLabel rect {
             fill: #141414 !important;
             opacity: 0.9;
@@ -135,7 +136,7 @@
         g.cluster text {
             font-size: 20px !important;
             text-transform: uppercase;
-            fill: #cccccc !important; /* 약간 회색조로 구분 */
+            fill: #cccccc !important; 
         }
 
         /* 5. 노드 선명도 */
@@ -168,7 +169,7 @@
                         N_Feed[Broadcast<br/>Video Feed]:::source
                     end
 
-                    subgraph N_MAM [2. INGEST & MANAGEMENT]
+                    subgraph N_MAM [2. INGEST and MANAGEMENT]
                         direction TB
                         N_Dalet[Dalet Flex<br/>Media Asset Mgmt]:::vendor
                         N_LiveIngest[Azure Media<br/>Live Ingest]:::azure
@@ -190,10 +191,10 @@
 
                     subgraph N_Dist [5. DELIVERY]
                         direction TB
-                        N_Shield[Origin Shield<br/>Mid-tier Cache]:::vendor
+                        N_Shield[Origin Shield<br/>Mid tier Cache]:::vendor
                         
-                        subgraph MultiCDN [Multi-CDN Strategy]
-                            N_Traffic[Traffic Director<br/>DNS Load Balancer]:::vendor
+                        subgraph MultiCDN [Multi CDN Strategy - Direct Contracts]
+                            N_Traffic[Traffic Director<br/>Routing Logic]:::vendor
                             N_Akamai[Akamai<br/>Global Edge]:::vendor
                             N_Fastly[Fastly<br/>Global Edge]:::vendor
                         end
@@ -257,7 +258,7 @@
                         V_File[Video Files<br/>Manual Upload]:::source
                     end
 
-                    subgraph V_MAM [2. INGEST & MAM]
+                    subgraph V_MAM [2. INGEST and MAM]
                         direction TB
                         V_Ingest[Vimeo Ingest<br/>Upload Handler]:::vimeo
                         V_CMS[Vimeo CMS<br/>Basic Metadata]:::vimeo
@@ -271,14 +272,14 @@
 
                     subgraph V_Back [4. BACKEND]
                         direction TB
-                        V_Paywall[Monetization<br/>Sub / Ads]:::vimeo
+                        V_Paywall[Monetization<br/>Sub and Ads]:::vimeo
                         V_Auth[Vimeo Auth<br/>User Mgmt]:::vimeo
                         V_API[Vimeo API<br/>Limited]:::vimeo
                     end
 
                     subgraph V_Dist [5. DELIVERY]
                         direction TB
-                        V_CDN[Vimeo CDN<br/>Global Edge]:::vimeo
+                        V_CDN[Vimeo CDN<br/>Bundled Managed]:::vimeo
                     end
 
                     subgraph V_App [6. EXPERIENCE]
@@ -309,7 +310,6 @@
     <script>
         mermaid.initialize({ 
             startOnLoad: true,
-            // [수정] 강제 축소 방지 및 크기 최적화 설정
             flowchart: { 
                 useMaxWidth: false, 
                 htmlLabels: true,
@@ -327,9 +327,9 @@
                 clusterBorder: '#444',
                 defaultLinkColor: '#ffffff',
                 fontFamily: 'Segoe UI',
-                fontSize: '16px', /* 기본 폰트 크기 확대 */
-                nodeTextColor: '#ffffff', /* 기본 노드 텍스트 흰색 */
-                edgeLabelColor: '#ffffff' /* 기본 엣지 라벨 흰색 */
+                fontSize: '16px',
+                nodeTextColor: '#ffffff',
+                edgeLabelColor: '#ffffff'
             }
         });
     </script>
