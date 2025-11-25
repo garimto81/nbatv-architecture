@@ -3,124 +3,333 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NBA TV Technical Architecture</title>
+    <title>WSOP TV Architecture Deck</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <style>
+        /* --- Layout & Scroll Snap --- */
         body {
+            margin: 0;
+            padding: 0;
             background-color: #0a0a0a;
             color: #ffffff;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory; /* 페이지 단위 스크롤 */
+            height: 100vh;
+        }
+
+        .page {
+            height: 100vh;
+            width: 100%;
+            scroll-snap-align: start; /* 스크롤 시 페이지 시작점에 고정 */
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 0;
-            padding: 20px;
+            justify-content: center;
+            padding: 10px; /* 패딩 축소하여 다이어그램 공간 확보 */
+            box-sizing: border-box;
+            border-bottom: 1px solid #333;
+            position: relative;
+            overflow: hidden; /* 페이지 밖으로 나가는 요소 숨김 */
         }
+
         h1 {
-            color: #ED1C24; /* NBA Red-ish */
-            margin-bottom: 10px;
+            font-size: 2rem;
+            margin: 0 0 5px 0;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-align: center;
+            z-index: 10;
         }
+
         p {
             color: #888;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            text-align: center;
+            z-index: 10;
         }
+
         .diagram-container {
-            width: 100%;
-            max-width: 1400px;
+            width: 98%;
+            height: 85%; /* 높이를 키워서 다이어그램 확대 */
             background-color: #141414;
             border: 1px solid #333;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 15px;
+            padding: 0;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            
+            /* [수정] 서브 스크롤 제거 및 중앙 정렬 */
+            overflow: hidden; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
+
+        /* [수정] Mermaid SVG 크기 최적화 */
+        .mermaid {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mermaid svg {
+            max-height: 100%; /* 높이에 맞춰서 꽉 차게 */
+            width: auto;      /* 비율 유지 */
+            max-width: 100%;  /* 너비가 넘치지 않게 */
+        }
+
+        .page-indicator {
+            position: absolute;
+            bottom: 10px;
+            font-size: 0.8rem;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: bounce 2s infinite;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
+        }
+
+        /* --- [중요] 텍스트 시인성 강제 설정 (High Contrast) --- */
+        
+        /* 1. 모든 SVG 텍스트 요소를 강제로 흰색으로 */
+        g.node text, 
+        g.edgeLabel text, 
+        g.cluster text, 
+        .mermaid text,
+        .label {
+            fill: #ffffff !important;
+            color: #ffffff !important;
+            font-family: 'Segoe UI', sans-serif !important;
+            font-weight: 700 !important;
+            font-size: 16px !important; /* 폰트 크기 약간 키움 */
+            stroke: none !important; /* 텍스트 외곽선 제거로 깔끔하게 */
+        }
+
+        /* 2. [예외] Client 및 Vimeo 노드 (밝은 배경/파란 배경) -> 검정색 텍스트 */
+        g.node.client text, g.node.client tspan {
+            fill: #000000 !important;
+            color: #000000 !important;
+        }
+        g.node.vimeo text, g.node.vimeo tspan {
+            fill: #000000 !important;
+            color: #000000 !important;
+        }
+
+        /* 3. 연결선 라벨의 배경색 (어둡게 하여 글씨 강조) */
+        .edgeLabel rect {
+            fill: #141414 !important;
+            opacity: 0.9;
+        }
+
+        /* 4. 서브그래프 제목 */
+        g.cluster text {
+            font-size: 20px !important;
+            text-transform: uppercase;
+            fill: #cccccc !important; /* 약간 회색조로 구분 */
+        }
+
+        /* 5. 노드 선명도 */
+        .node rect, .node circle, .node ellipse, .node polygon {
+            stroke-width: 2px !important;
+        }
+
     </style>
 </head>
 <body>
 
-    <h1>NBA TV Technical Architecture</h1>
-    <p>Hybrid Cloud Model: Microsoft Azure + Specialized Vendors</p>
+    <!-- PAGE 1: NBA TV MODEL -->
+    <section class="page">
+        <h1 style="color: #ED1C24;">1. NBA TV Architecture</h1>
+        <p>Custom Azure Ecosystem: High Flexibility & Data Integration</p>
+        
+        <div class="diagram-container">
+            <div class="mermaid">
+                graph TD
+                    %% Styles
+                    classDef azure fill:#0078D4,stroke:#fff,stroke-width:2px,color:#fff
+                    classDef vendor fill:#222,stroke:#ED1C24,stroke-width:2px,stroke-dasharray: 5 5,color:#fff
+                    classDef client fill:#fff,stroke:#000,stroke-width:3px,color:#000
+                    classDef source fill:#444,stroke:#fff,stroke-width:1px,color:#fff
 
-    <div class="diagram-container">
-        <div class="mermaid">
-            graph LR
-                %% Define Styles
-                classDef azure fill:#0078D4,stroke:#fff,stroke-width:2px,color:white
-                classDef vendor fill:#222,stroke:#ED1C24,stroke-width:2px,color:white,stroke-dasharray: 5 5
-                classDef client fill:#fff,stroke:#1D428A,stroke-width:4px,color:black
-                classDef source fill:#444,stroke:#fff,stroke-width:1px,color:white
+                    subgraph N_Input [1. ACQUISITION]
+                        direction TB
+                        N_Cam[Hawk-Eye<br/>Optical Tracking]:::vendor
+                        N_Data[Sportradar<br/>Official Data]:::vendor
+                        N_Feed[Broadcast<br/>Video Feed]:::source
+                    end
 
-                %% 1. Sources (Input)
-                subgraph Sources [1. INPUT - Venue and Data]
-                    direction TB
-                    Cam[Hawk-Eye<br/>Optical Tracking]:::source
-                    Stats[Sportradar<br/>Official Stats]:::source
-                    Video[Live Broadcast<br/>Video Feeds]:::source
-                end
+                    subgraph N_MAM [2. INGEST & MANAGEMENT]
+                        direction TB
+                        N_Dalet[Dalet Flex<br/>Media Asset Mgmt]:::vendor
+                        N_LiveIngest[Azure Media<br/>Live Ingest]:::azure
+                    end
 
-                %% 2. Cloud Infrastructure (Azure)
-                subgraph Cloud [2. MICROSOFT AZURE - The Factory]
-                    direction TB
+                    subgraph N_Proc [3. INTELLIGENCE]
+                        direction TB
+                        N_WSC[WSC Sports<br/>Auto Highlights]:::vendor
+                        N_SecSpec[Second Spectrum<br/>Analytics Engine]:::vendor
+                        N_GenAI[Azure OpenAI<br/>GenAI]:::azure
+                    end
+
+                    subgraph N_Back [4. BACKEND]
+                        direction TB
+                        N_DB[Cosmos DB<br/>Real-time Stats]:::azure
+                        N_Auth[Azure AD B2C<br/>NBA ID]:::azure
+                        N_Logic[Azure Kubernetes<br/>Biz Logic]:::azure
+                    end
+
+                    subgraph N_Dist [5. DELIVERY]
+                        direction TB
+                        N_Shield[Origin Shield<br/>Mid-tier Cache]:::vendor
+                        
+                        subgraph MultiCDN [Multi-CDN Strategy]
+                            N_Traffic[Traffic Director<br/>DNS Load Balancer]:::vendor
+                            N_Akamai[Akamai<br/>Global Edge]:::vendor
+                            N_Fastly[Fastly<br/>Global Edge]:::vendor
+                        end
+                    end
+
+                    subgraph N_App [6. EXPERIENCE]
+                        direction TB
+                        N_Client[React Native App<br/>Custom UI]:::client
+                        N_Personal[Azure Personalizer<br/>AI Recs]:::azure
+                    end
+
+                    N_Cam --> N_SecSpec
+                    N_Data --> N_DB
+                    N_Feed --> N_LiveIngest
+                    N_Feed --> N_Dalet
                     
-                    subgraph MAM [MAM and Production]
-                        Dalet[Dalet Flex<br/>Asset Management]:::vendor
-                        WSC[WSC Sports<br/>Auto Highlights]:::vendor
-                    end
-
-                    subgraph DataLayer [Data and AI Processing]
-                        SecSpec[Second Spectrum<br/>Analytics Engine]:::vendor
-                        AzureAI[Azure OpenAI<br/>Generative AI]:::azure
-                    end
+                    N_Dalet --> N_WSC
+                    N_WSC --> N_Dalet
+                    N_Dalet --> N_LiveIngest
                     
-                    subgraph Backend [Core Services]
-                        Cosmos[Azure Cosmos DB<br/>Real-time DB]:::azure
-                        AKS[Azure Kubernetes<br/>Microservices]:::azure
-                        Transcode[Media Services<br/>Encoding Packaging]:::azure
-                    end
-                end
+                    N_SecSpec --> N_DB
+                    N_GenAI --> N_LiveIngest
 
-                %% 3. Distribution
-                subgraph CDN [3. DISTRIBUTION]
-                    Akamai[Akamai Fastly<br/>Global Edge]:::vendor
-                end
-
-                %% 4. Client (App)
-                subgraph Client [4. PLATFORM - End User]
-                    direction TB
-                    App[NBA App<br/>React Native]:::client
+                    N_DB --> N_Logic
+                    N_Logic --> N_Client
+                    N_Auth --> N_Client
                     
-                    subgraph UserExp [UX Engines]
-                        Personalizer[Azure Personalizer<br/>Recommendation]:::azure
-                        Identity[Azure AD B2C<br/>NBA ID SSO]:::azure
-                    end
-                end
-
-                %% Connections
-                Cam -->|3D Coordinates| SecSpec
-                Stats -->|Raw Logs| Cosmos
-                Video -->|High Res| Dalet
-                
-                Dalet -->|Proxy Video| WSC
-                WSC -->|Clipped Highlights| Dalet
-                Dalet -->|Mezzanine File| Transcode
-                
-                SecSpec -->|Advanced Stats| Cosmos
-                AzureAI -->|Captions Trans| Transcode
-
-                Transcode -->|HLS DASH| Akamai
-                Cosmos -->|JSON Data| App
-                
-                Akamai -->|Stream| App
-                Personalizer -->|Feed Logic| App
-                Identity -->|Auth Token| App
+                    %% CDN Flow Update
+                    N_LiveIngest --> N_Shield
+                    N_Shield --> N_Akamai
+                    N_Shield --> N_Fastly
+                    
+                    N_Traffic -.->|Route Logic| N_Akamai
+                    N_Traffic -.->|Route Logic| N_Fastly
+                    
+                    N_Akamai --> N_Client
+                    N_Fastly --> N_Client
+                    
+                    N_Personal --> N_Client
+            </div>
         </div>
-    </div>
+        <div class="page-indicator">▼ Scroll for Vimeo Model ▼</div>
+    </section>
+
+    <!-- PAGE 2: VIMEO MODEL -->
+    <section class="page">
+        <h1 style="color: #1AB7EA;">2. Vimeo Architecture</h1>
+        <p>SaaS Turnkey Model: Fast Setup & Template Based</p>
+
+        <div class="diagram-container">
+            <div class="mermaid">
+                graph TD
+                    %% Styles
+                    classDef vimeo fill:#1AB7EA,stroke:#fff,stroke-width:2px,color:#000
+                    classDef client fill:#fff,stroke:#1AB7EA,stroke-width:4px,color:#000
+                    classDef source fill:#444,stroke:#fff,stroke-width:1px,color:#fff
+
+                    subgraph V_Input [1. ACQUISITION]
+                        direction TB
+                        V_Feed[RTMP Stream<br/>Encoder Output]:::source
+                        V_File[Video Files<br/>Manual Upload]:::source
+                    end
+
+                    subgraph V_MAM [2. INGEST & MAM]
+                        direction TB
+                        V_Ingest[Vimeo Ingest<br/>Upload Handler]:::vimeo
+                        V_CMS[Vimeo CMS<br/>Basic Metadata]:::vimeo
+                    end
+
+                    subgraph V_Proc [3. PROCESSING]
+                        direction TB
+                        V_Trans[Auto Transcode<br/>ABR Ladder]:::vimeo
+                        V_NoAI[No AI Engine<br/>Manual Only]:::source
+                    end
+
+                    subgraph V_Back [4. BACKEND]
+                        direction TB
+                        V_Paywall[Monetization<br/>Sub / Ads]:::vimeo
+                        V_Auth[Vimeo Auth<br/>User Mgmt]:::vimeo
+                        V_API[Vimeo API<br/>Limited]:::vimeo
+                    end
+
+                    subgraph V_Dist [5. DELIVERY]
+                        direction TB
+                        V_CDN[Vimeo CDN<br/>Global Edge]:::vimeo
+                    end
+
+                    subgraph V_App [6. EXPERIENCE]
+                        direction TB
+                        V_Client[Branded Apps<br/>Template UI]:::client
+                        V_NoRec[Standard Feed<br/>No Personalization]:::vimeo
+                    end
+
+                    V_Feed --> V_Ingest
+                    V_File --> V_Ingest
+                    
+                    V_Ingest --> V_Trans
+                    V_Trans --> V_CMS
+                    
+                    V_CMS --> V_Paywall
+                    V_Paywall --> V_API
+                    
+                    V_Trans --> V_CDN
+                    
+                    V_API --> V_Client
+                    V_Auth --> V_Client
+                    V_CDN --> V_Client
+            </div>
+        </div>
+        <div class="page-indicator" style="animation: none;">▲ Scroll Up for NBA Model ▲</div>
+    </section>
 
     <script>
         mermaid.initialize({ 
             startOnLoad: true,
-            theme: 'dark',
-            flowchart: {
-                curve: 'basis'
+            // [수정] 강제 축소 방지 및 크기 최적화 설정
+            flowchart: { 
+                useMaxWidth: false, 
+                htmlLabels: true,
+                curve: 'basis' 
+            },
+            theme: 'base',
+            themeVariables: {
+                darkMode: true,
+                background: '#141414',
+                primaryColor: '#0078D4',
+                lineColor: '#ffffff',
+                mainBkg: '#141414',
+                nodeBorder: '#ffffff',
+                clusterBkg: 'rgba(255,255,255,0.02)',
+                clusterBorder: '#444',
+                defaultLinkColor: '#ffffff',
+                fontFamily: 'Segoe UI',
+                fontSize: '16px', /* 기본 폰트 크기 확대 */
+                nodeTextColor: '#ffffff', /* 기본 노드 텍스트 흰색 */
+                edgeLabelColor: '#ffffff' /* 기본 엣지 라벨 흰색 */
             }
         });
     </script>
