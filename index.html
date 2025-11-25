@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NBA TV Technical Architecture</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #ED1C24; /* NBA Red-ish */
+            margin-bottom: 10px;
+        }
+        p {
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .diagram-container {
+            width: 100%;
+            max-width: 1400px;
+            background-color: #141414;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>NBA TV Technical Architecture</h1>
+    <p>Hybrid Cloud Model: Microsoft Azure + Specialized Vendors</p>
+
+    <div class="diagram-container">
+        <div class="mermaid">
+            graph LR
+                %% Define Styles
+                classDef azure fill:#0078D4,stroke:#fff,stroke-width:2px,color:white
+                classDef vendor fill:#222,stroke:#ED1C24,stroke-width:2px,color:white,stroke-dasharray: 5 5
+                classDef client fill:#fff,stroke:#1D428A,stroke-width:4px,color:black
+                classDef source fill:#444,stroke:#fff,stroke-width:1px,color:white
+
+                %% 1. Sources (Input)
+                subgraph Sources [1. INPUT - Venue and Data]
+                    direction TB
+                    Cam[Hawk-Eye<br/>Optical Tracking]:::source
+                    Stats[Sportradar<br/>Official Stats]:::source
+                    Video[Live Broadcast<br/>Video Feeds]:::source
+                end
+
+                %% 2. Cloud Infrastructure (Azure)
+                subgraph Cloud [2. MICROSOFT AZURE - The Factory]
+                    direction TB
+                    
+                    subgraph MAM [MAM and Production]
+                        Dalet[Dalet Flex<br/>Asset Management]:::vendor
+                        WSC[WSC Sports<br/>Auto Highlights]:::vendor
+                    end
+
+                    subgraph DataLayer [Data and AI Processing]
+                        SecSpec[Second Spectrum<br/>Analytics Engine]:::vendor
+                        AzureAI[Azure OpenAI<br/>Generative AI]:::azure
+                    end
+                    
+                    subgraph Backend [Core Services]
+                        Cosmos[Azure Cosmos DB<br/>Real-time DB]:::azure
+                        AKS[Azure Kubernetes<br/>Microservices]:::azure
+                        Transcode[Media Services<br/>Encoding Packaging]:::azure
+                    end
+                end
+
+                %% 3. Distribution
+                subgraph CDN [3. DISTRIBUTION]
+                    Akamai[Akamai Fastly<br/>Global Edge]:::vendor
+                end
+
+                %% 4. Client (App)
+                subgraph Client [4. PLATFORM - End User]
+                    direction TB
+                    App[NBA App<br/>React Native]:::client
+                    
+                    subgraph UserExp [UX Engines]
+                        Personalizer[Azure Personalizer<br/>Recommendation]:::azure
+                        Identity[Azure AD B2C<br/>NBA ID SSO]:::azure
+                    end
+                end
+
+                %% Connections
+                Cam -->|3D Coordinates| SecSpec
+                Stats -->|Raw Logs| Cosmos
+                Video -->|High Res| Dalet
+                
+                Dalet -->|Proxy Video| WSC
+                WSC -->|Clipped Highlights| Dalet
+                Dalet -->|Mezzanine File| Transcode
+                
+                SecSpec -->|Advanced Stats| Cosmos
+                AzureAI -->|Captions Trans| Transcode
+
+                Transcode -->|HLS DASH| Akamai
+                Cosmos -->|JSON Data| App
+                
+                Akamai -->|Stream| App
+                Personalizer -->|Feed Logic| App
+                Identity -->|Auth Token| App
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'dark',
+            flowchart: {
+                curve: 'basis'
+            }
+        });
+    </script>
+</body>
+</html>
