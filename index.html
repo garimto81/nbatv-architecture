@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WSOP TV Architecture Deck</title>
     <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-            <style>
+    <style>
         /* Layout & scroll */
         body {
             margin: 0;
@@ -16,7 +16,52 @@
             overflow-y: scroll;
             scroll-snap-type: y mandatory;
             height: 100vh;
+            scroll-behavior: smooth;
         }
+
+        /* --- Navigation Bar --- */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid #333;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: #888;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Active/Highlight colors */
+        .nav-btn.nba:hover { color: #ED1C24; border-color: #ED1C24; }
+        .nav-btn.vimeo:hover { color: #1AB7EA; border-color: #1AB7EA; }
+        .nav-btn.bright:hover { color: #FF6600; border-color: #FF6600; }
+        .nav-btn.wecandeo:hover { color: #00A0E9; border-color: #00A0E9; }
 
         .page {
             height: 100vh;
@@ -26,21 +71,11 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 10px;
+            padding: 70px 10px 10px 10px;
             box-sizing: border-box;
             border-bottom: 1px solid #333;
             position: relative;
             overflow: hidden;
-        }
-
-        /* Readability overlay */
-        .page::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.35);
-            z-index: 1;
-            pointer-events: none;
         }
 
         h1 {
@@ -51,7 +86,7 @@
             text-transform: uppercase;
             letter-spacing: 4px;
             text-align: center;
-            text-shadow: 0 0 8px rgba(0,0,0,0.7), 0 3px 6px rgba(0,0,0,0.4);
+            text-shadow: 0 0 8px rgba(0,0,0,0.7);
         }
 
         p {
@@ -60,7 +95,6 @@
             color: #f8f9fa;
             margin-bottom: 10px;
             font-size: 1.1rem;
-            line-height: 1.6;
             text-align: center;
             text-shadow: 0 0 6px rgba(0,0,0,0.6);
         }
@@ -94,108 +128,62 @@
             height: auto;
         }
 
-        .page-indicator {
-            position: absolute;
-            bottom: 10px;
-            font-size: 0.8rem;
-            color: #e0e0e0;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            animation: bounce 2s infinite;
-            pointer-events: none;
-            z-index: 10;
-            padding: 6px 10px;
-            border-radius: 999px;
-            background: rgba(0,0,0,0.55);
-            text-shadow: 0 0 5px rgba(0,0,0,0.6);
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-10px);}
-            60% {transform: translateY(-5px);}
-        }
-
-                /* Edge visibility */
-        .mermaid .edgePath path {
-            stroke: #ffffff !important;
-            stroke-width: 2px !important;
-        }
-        .mermaid .marker {
-            fill: #ffffff !important;
-            stroke: #ffffff !important;
-        }
-        
-        g.node text,
-        g.edgeLabel text,
-        g.cluster text,
-        .mermaid text,
-        .label {
-            fill: #fdfdfd !important;
-            color: #fdfdfd !important;
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif !important;
+        /* --- 텍스트 시인성 강제 (CSS Override) --- */
+        /* 1. 기본 텍스트: 흰색 + 진한 그림자 */
+        g.node text, g.edgeLabel text, g.cluster text, .mermaid text {
+            font-family: 'Segoe UI', sans-serif !important;
             font-weight: 800 !important;
-            font-size: 17px !important;
-            stroke: none !important;
-            stroke-width: 0 !important;
-            text-shadow: 0 0 5px #000 !important;
+            fill: #ffffff !important;
+            text-shadow: 2px 2px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000 !important;
         }
 
+        /* 2. 검정색 텍스트 예외 처리 (밝은 배경 노드용) */
+        /* 인라인 스타일로 지정된 클래스에 맞춰 CSS 오버라이드 */
+        g.node.client text, g.node.client tspan,
+        g.node.vimeo text, g.node.vimeo tspan,
+        g.node.brightcove text, g.node.brightcove tspan,
+        g.node.wecandeo text, g.node.wecandeo tspan {
+            fill: #000000 !important;
+            text-shadow: none !important;
+        }
+
+        /* 3. 연결선 라벨 배경 */
         .edgeLabel rect {
-            fill: #141414 !important;
-            opacity: 0.9;
+            fill: #000000 !important;
+            opacity: 0.7 !important;
         }
 
+        /* 4. 그룹 제목 */
         g.cluster text {
+            fill: #FFD700 !important; /* Gold */
             font-size: 20px !important;
             text-transform: uppercase;
-            fill: #cccccc !important;
         }
 
-        .node rect, .node circle, .node ellipse, .node polygon {
-            stroke-width: 2px !important;
-        }
-
-        /* Bright node readability v2 */
-        g.node.client rect,
-        g.node.vimeo rect,
-        g.node.brightcove rect {
-            fill: #dce1e6 !important;
-            stroke: #0b0b0b !important;
-            stroke-width: 3px !important;
-            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.55));
-        }
-        g.node.client text,
-        g.node.vimeo text,
-        g.node.brightcove text {
-            fill: #0a0a0a !important;
-            color: #0a0a0a !important;
-            font-weight: 900 !important;
-            text-shadow: 0 0 4px rgba(255,255,255,0.6), 0 2px 5px rgba(0,0,0,0.45) !important;
-        }
-        /* EXPERIENCE html labels 대비 강화 */
-        g.node.client foreignObject .nodeLabel,
-        g.node.client foreignObject .nodeLabel * {
-            color: #0a0a0a !important;
-            text-shadow: 0 0 4px rgba(255,255,255,0.55), 0 2px 5px rgba(0,0,0,0.45) !important;
-            font-weight: 900 !important;
-        }
     </style>
 </head>
 <body>
 
+    <!-- NAVIGATION BAR -->
+    <nav class="navbar">
+        <button onclick="scrollToSection('nba')" class="nav-btn nba">1. NBA TV</button>
+        <button onclick="scrollToSection('vimeo')" class="nav-btn vimeo">2. VIMEO</button>
+        <button onclick="scrollToSection('brightcove')" class="nav-btn bright">3. BRIGHTCOVE</button>
+        <button onclick="scrollToSection('wecandeo')" class="nav-btn wecandeo">4. WECANDEO</button>
+    </nav>
+
     <!-- PAGE 1: NBA TV MODEL -->
-    <section class="page">
+    <section id="nba" class="page">
         <h1 style="color: #ED1C24;">1. NBA TV Architecture</h1>
         <p>Custom Azure Ecosystem: High Flexibility & Data Integration</p>
         
         <div class="diagram-container">
             <div class="mermaid">
                 graph TD
-                    %% Styles
+                    %% [수정됨] 인라인 스타일 정의 (렌더링 오류 원천 차단)
                     classDef azure fill:#0078D4,stroke:#fff,stroke-width:2px,color:#fff
                     classDef vendor fill:#222,stroke:#ED1C24,stroke-width:2px,stroke-dasharray: 5 5,color:#fff
-                    classDef client fill:#fff,stroke:#000,stroke-width:3px,color:#000
+                    classDef client fill:#dce1e6,stroke:#000,stroke-width:3px,color:#000
                     classDef source fill:#444,stroke:#fff,stroke-width:1px,color:#fff
 
                     subgraph N_Input [1. ACQUISITION]
@@ -258,7 +246,7 @@
                     N_Logic --> N_Client
                     N_Auth --> N_Client
                     
-                    %% CDN Flow Update
+                    %% CDN Flow
                     N_LiveIngest --> N_Shield
                     N_Shield --> N_Akamai
                     N_Shield --> N_Fastly
@@ -272,20 +260,19 @@
                     N_Personal --> N_Client
             </div>
         </div>
-        <div class="page-indicator">Scroll for Vimeo Model 
     </section>
 
     <!-- PAGE 2: VIMEO MODEL -->
-    <section class="page">
+    <section id="vimeo" class="page">
         <h1 style="color: #1AB7EA;">2. Vimeo Architecture</h1>
         <p>SaaS Turnkey Model: Fast Setup & Template Based</p>
 
         <div class="diagram-container">
             <div class="mermaid">
                 graph TD
-                    %% Styles
+                    %% [수정됨] 인라인 스타일 정의
                     classDef vimeo fill:#1AB7EA,stroke:#fff,stroke-width:2px,color:#000
-                    classDef client fill:#fff,stroke:#1AB7EA,stroke-width:4px,color:#000
+                    classDef client fill:#dce1e6,stroke:#1AB7EA,stroke-width:3px,color:#000
                     classDef source fill:#444,stroke:#fff,stroke-width:1px,color:#fff
 
                     subgraph V_Input [1. ACQUISITION]
@@ -340,20 +327,19 @@
                     V_CDN --> V_Client
             </div>
         </div>
-        <div class="page-indicator">Scroll for Brightcove Model 
     </section>
 
     <!-- PAGE 3: BRIGHTCOVE MODEL -->
-    <section class="page">
+    <section id="brightcove" class="page">
         <h1 style="color: #FF6600;">3. Brightcove Architecture</h1>
         <p>Enterprise Video Platform (EVP): Robust SaaS & Monetization</p>
 
         <div class="diagram-container">
             <div class="mermaid">
                 graph TD
-                    %% Styles
+                    %% [수정됨] 인라인 스타일 정의
                     classDef brightcove fill:#FF6600,stroke:#fff,stroke-width:2px,color:#000
-                    classDef client fill:#fff,stroke:#FF6600,stroke-width:4px,color:#000
+                    classDef client fill:#dce1e6,stroke:#FF6600,stroke-width:3px,color:#000
                     classDef source fill:#444,stroke:#fff,stroke-width:1px,color:#fff
 
                     subgraph B_Input [1. ACQUISITION]
@@ -412,7 +398,77 @@
                     B_Analytics --> B_Integrate
             </div>
         </div>
-        <div class="page-indicator" style="animation: none;">Scroll Up for Models 
+    </section>
+
+    <!-- PAGE 4: WECANDEO MODEL -->
+    <section id="wecandeo" class="page">
+        <h1 style="color: #00A0E9;">4. WECANDEO Architecture</h1>
+        <p>Integrated OVP: Video Pack & Live Pack Managed Service</p>
+
+        <div class="diagram-container">
+            <div class="mermaid">
+                graph TD
+                    %% [수정됨] 인라인 스타일 정의
+                    classDef wecandeo fill:#00A0E9,stroke:#fff,stroke-width:2px,color:#000
+                    classDef client fill:#dce1e6,stroke:#00A0E9,stroke-width:3px,color:#000
+                    classDef source fill:#444,stroke:#fff,stroke-width:1px,color:#fff
+
+                    subgraph W_Input [1. ACQUISITION]
+                        direction TB
+                        W_LiveSrc[Live Encoder<br/>RTMP SRT]:::source
+                        W_FileSrc[Video Files<br/>Upload FTP]:::source
+                    end
+
+                    subgraph W_Platform [2. WECANDEO PLATFORM - All in One]
+                        direction TB
+                        
+                        subgraph W_Live [Live Pack]
+                            W_Ingest[Live Ingest<br/>Stream Handler]:::wecandeo
+                            W_DVR[Live DVR<br/>Real-time Save]:::wecandeo
+                        end
+
+                        subgraph W_VOD [Video Pack]
+                            W_Trans[Transcoding<br/>Multi-Bitrate]:::wecandeo
+                            W_CMS[Console CMS<br/>Meta Publish]:::wecandeo
+                        end
+
+                        subgraph W_Mgmt [Management]
+                            W_Stats[Analytics<br/>Viewer Data]:::wecandeo
+                            W_Player[Player Builder<br/>Custom Skin]:::wecandeo
+                        end
+                    end
+
+                    subgraph W_Dist [3. DELIVERY]
+                        direction TB
+                        W_CDN[Global CDN<br/>Managed Network]:::wecandeo
+                    end
+
+                    subgraph W_App [4. EXPERIENCE]
+                        direction TB
+                        W_Web[HTML5 Player<br/>Web Integration]:::client
+                        W_Mobile[Mobile SDK<br/>iOS Android]:::client
+                    end
+
+                    %% Connections
+                    W_LiveSrc --> W_Ingest
+                    W_FileSrc --> W_Trans
+                    
+                    W_Ingest --> W_DVR
+                    W_DVR -.->|Save as VOD| W_CMS
+                    
+                    W_Ingest --> W_CDN
+                    W_Trans --> W_CDN
+                    
+                    W_CMS --> W_Player
+                    W_Player --> W_Web
+                    
+                    W_CDN --> W_Web
+                    W_CDN --> W_Mobile
+                    
+                    W_Web -.-> W_Stats
+                    W_Mobile -.-> W_Stats
+            </div>
+        </div>
     </section>
 
     <script>
@@ -435,17 +491,18 @@
                 clusterBorder: '#444',
                 defaultLinkColor: '#ffffff',
                 fontFamily: 'Segoe UI',
-                fontSize: '16px',
+                fontSize: '18px',
                 nodeTextColor: '#ffffff',
                 edgeLabelColor: '#ffffff'
             }
         });
+
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
     </script>
 </body>
 </html>
-
-
-
-
-
-
