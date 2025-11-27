@@ -13,9 +13,9 @@
             background-color: #0a0a0a;
             color: #f8f9fa;
             font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-            overflow-y: scroll;
-            scroll-snap-type: y mandatory;
-            height: 100vh;
+            /* [수정] 전체 페이지 스크롤 활성화 */
+            overflow-y: auto; 
+            height: auto;
             scroll-behavior: smooth;
         }
 
@@ -57,18 +57,18 @@
         .nav-btn.wecandeo:hover { color: #00A0E9; border-color: #00A0E9; }
 
         .page {
-            height: 100vh;
+            /* [수정] 고정 높이 제거 -> 내용물에 따라 늘어나도록 설정 */
+            height: auto;
+            min-height: 100vh;
             width: 100%;
-            scroll-snap-align: start;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 70px 20px 20px 20px;
+            justify-content: flex-start; /* 위에서부터 배치 */
+            padding: 100px 20px 60px 20px; /* 상단 네비게이션 공간 확보 */
             box-sizing: border-box;
             border-bottom: 1px solid #333;
             position: relative;
-            overflow: hidden;
         }
 
         h1 {
@@ -85,63 +85,78 @@
 
         p {
             color: #ccc;
-            margin-bottom: 15px;
+            margin-bottom: 30px;
             font-size: 1.1rem;
             text-align: center;
             z-index: 10;
         }
 
         .diagram-container {
-            width: 95%;
-            height: 85%;
+            width: 98%; /* 가로 꽉 채우기 */
+            max-width: 1800px; /* 너무 퍼지지 않게 최대폭 제한 */
+            height: auto; 
+            overflow: visible; 
+            
             background-color: #141414;
             border: 1px solid #333;
             border-radius: 15px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.6);
-            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
             z-index: 5;
+            padding: 40px 20px; /* 내부 여백 */
         }
 
         .mermaid {
             width: 100%;
-            height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
         }
         
         .mermaid svg {
-            max-height: 95%;
-            max-width: 95%;
-            height: auto;
+            width: 100% !important;
+            height: auto !important;
+            max-width: none !important;
         }
 
-        /* --- [텍스트 가독성 강제 설정] --- */
-        /* 1. 공통 폰트 및 그림자 설정 */
+        /* --- [텍스트 가독성 강제 설정 - 최종 수정] --- */
+        
+        /* 1. 공통 폰트 */
         g.node text, g.edgeLabel text, g.cluster text, .mermaid text, .nodeLabel {
             font-family: 'Segoe UI', sans-serif !important;
             font-weight: 800 !important;
-            /* 진한 그림자로 배경색 상관없이 텍스트 팝업 */
+        }
+
+        /* 2. [핵심 수정] 모든 노드 텍스트를 흰색 + 강한 그림자로 통일 (예외 없음) */
+        /* 기존의 .client, .vimeo 등의 검정색 예외 규칙을 모두 제거하고 통합했습니다. */
+        
+        /* HTML 라벨 (Mermaid 최신 버전 기본값) */
+        .nodeLabel, .label {
+            color: #ffffff !important;
             text-shadow: 
                 2px 2px 0 #000, 
-                -1px -1px 0 #000, 
-                1px -1px 0 #000, 
-                -1px 1px 0 #000, 
+                -1px -1px 0 #000,  
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
                 1px 1px 0 #000,
-                0 0 5px rgba(0,0,0,0.8) !important;
+                0 0 5px rgba(0,0,0,0.9) !important; /* 진한 그림자 */
         }
-        
-        /* 2. 모든 텍스트 흰색 강제 */
-        g.node text, g.node tspan, .nodeLabel { 
-            fill: #ffffff !important; 
-            color: #ffffff !important;
+
+        /* SVG 텍스트 (Fallback) */
+        g.node text, g.node tspan {
+            fill: #ffffff !important;
+            text-shadow: 
+                2px 2px 0 #000, 
+                -1px -1px 0 #000,  
+                1px -1px 0 #000,
+                -1px 1px 0 #000,
+                1px 1px 0 #000 !important;
         }
-        
-        /* 3. 연결선 라벨 배경 */
+
+        /* 3. 연결선 라벨 */
         .edgeLabel rect {
             fill: #000000 !important;
             opacity: 0.7 !important;
@@ -150,12 +165,13 @@
             fill: #ffffff !important;
         }
 
-        /* 4. 그룹 제목 (노란색 강조) */
+        /* 4. 그룹 제목 */
         g.cluster text {
             fill: #FFD700 !important;
             color: #FFD700 !important;
             font-size: 20px !important;
             text-transform: uppercase;
+            text-shadow: 1px 1px 2px #000 !important;
         }
 
         /* 5. 노드 테두리 */
@@ -163,13 +179,9 @@
             stroke-width: 2.5px !important;
         }
 
-        /* 6. 노드 배경색 강제 (CSS Override) */
-        /* 기존 밝은색 배경이었던 Client 노드를 어두운 색(#2C3E50)으로 변경 */
-        g.node.client rect { 
-            fill: #2C3E50 !important; /* Midnight Blue */
-            stroke: #ffffff !important; 
-            stroke-width: 3px !important;
-        }
+        /* 배경색 강제 적용 */
+        /* Client 노드는 가독성을 위해 어두운 남색으로 변경 */
+        g.node.client rect { fill: #2C3E50 !important; stroke: #fff !important; stroke-width: 3px !important; } 
         
         g.node.azure rect { fill: #0078D4 !important; stroke: #fff !important; }
         g.node.vendor rect { fill: #222 !important; stroke: #ED1C24 !important; stroke-dasharray: 5 5; }
@@ -197,11 +209,11 @@
         <div class="diagram-container">
             <div class="mermaid">
                 graph TD
-                    %% 안전한 스타일 정의 (인라인)
-                    classDef azure fill:#0078D4,stroke:#fff,stroke-width:2px,color:#fff
-                    classDef vendor fill:#222,stroke:#ED1C24,stroke-width:2px,stroke-dasharray: 5 5,color:#fff
-                    classDef client fill:#2C3E50,stroke:#fff,stroke-width:3px,color:#fff
-                    classDef source fill:#444,stroke:#fff,stroke-width:1px,color:#fff
+                    %% 안전한 스타일 정의
+                    classDef azure fill:#0078D4,stroke:#fff,stroke-width:2px
+                    classDef vendor fill:#222,stroke:#ED1C24,stroke-width:2px,stroke-dasharray: 5 5
+                    classDef client fill:#2C3E50,stroke:#fff,stroke-width:3px
+                    classDef source fill:#444,stroke:#fff,stroke-width:1px
 
                     subgraph N_Input [1. ACQUISITION]
                         direction TB
@@ -283,9 +295,9 @@
         <div class="diagram-container">
             <div class="mermaid">
                 graph TD
-                    classDef vimeo fill:#1AB7EA,stroke:#fff,stroke-width:2px,color:#fff
-                    classDef client fill:#2C3E50,stroke:#fff,stroke-width:3px,color:#fff
-                    classDef source fill:#444,stroke:#fff,stroke-width:1px,color:#fff
+                    classDef vimeo fill:#1AB7EA,stroke:#fff,stroke-width:2px
+                    classDef client fill:#2C3E50,stroke:#fff,stroke-width:3px
+                    classDef source fill:#444,stroke:#fff,stroke-width:1px
 
                     subgraph V_Input [1. ACQUISITION]
                         direction TB
@@ -344,9 +356,9 @@
         <div class="diagram-container">
             <div class="mermaid">
                 graph TD
-                    classDef brightcove fill:#FF6600,stroke:#fff,stroke-width:2px,color:#fff
-                    classDef client fill:#2C3E50,stroke:#fff,stroke-width:3px,color:#fff
-                    classDef source fill:#444,stroke:#fff,stroke-width:1px,color:#fff
+                    classDef brightcove fill:#FF6600,stroke:#fff,stroke-width:2px
+                    classDef client fill:#2C3E50,stroke:#fff,stroke-width:3px
+                    classDef source fill:#444,stroke:#fff,stroke-width:1px
 
                     subgraph B_Input [1. ACQUISITION]
                         direction TB
@@ -408,9 +420,9 @@
         <div class="diagram-container">
             <div class="mermaid">
                 graph TD
-                    classDef wecandeo fill:#00A0E9,stroke:#fff,stroke-width:2px,color:#fff
-                    classDef client fill:#2C3E50,stroke:#fff,stroke-width:3px,color:#fff
-                    classDef source fill:#444,stroke:#fff,stroke-width:1px,color:#fff
+                    classDef wecandeo fill:#00A0E9,stroke:#fff,stroke-width:2px
+                    classDef client fill:#2C3E50,stroke:#fff,stroke-width:3px
+                    classDef source fill:#444,stroke:#fff,stroke-width:1px
 
                     subgraph W_Input [1. ACQUISITION]
                         direction TB
@@ -490,7 +502,8 @@
         function scrollToSection(id) {
             const element = document.getElementById(id);
             if (element) {
-                element.scrollIntoView({ behavior: 'smooth' });
+                const y = element.getBoundingClientRect().top + window.scrollY - 60;
+                window.scrollTo({top: y, behavior: 'smooth'});
             }
         }
     </script>
